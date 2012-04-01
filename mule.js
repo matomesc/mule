@@ -68,10 +68,25 @@
     this.status = status
   }
 
-  var mule = root.mule = {}
+  function Mule(host) {
+    this.host = host || null
+  }
+  Mule.prototype = {
+    endpoint: function (host) {
+      host = host.charAt(host.length - 1) == '/' ? host.slice(0, host.length - 1) : host
+      return new Mule(host)
+    }
+  }
+
   ;['get', 'post', 'put', 'delete', 'head', 'patch'].forEach(function (method) {
-    mule[method] = function (url) {
+    Mule.prototype[method] = function (url) {
+      if (this.host) {
+        var path = url.charAt(0) == '/'? url.slice(1) : url
+        url = this.host + '/' + path
+      }
       return new Request(method, url)
     }
   })
+
+  root.mule = new Mule()
 }).call(window)
