@@ -69,7 +69,7 @@
   }
 
   var mule = root.mule = {}
-  ;['get', 'post', 'put', 'delete'].forEach(function (method) {
+  ;['get', 'post', 'put', 'delete', 'head', 'patch'].forEach(function (method) {
     mule[method] = function (url) {
       return new Request(method, url)
     }
