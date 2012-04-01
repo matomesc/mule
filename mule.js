@@ -26,20 +26,24 @@
       return this
     },
     body: function (obj) {
-      this.body = JSON.stringify(obj)
+      if (this.method == 'get') {
+        // build query string
+        var query = Object.keys(obj).map(function (k) {
+          return encodeURIComponent(k) + '=' + encodeURIComponent(obj[k])
+        }).join('&')
+        this.url += '?' + query
+      } else {
+        this.body = JSON.stringify(obj)
+      }
       return this
     },
     end: function (callback) {
-      var xhr = new XMLHttpRequest()
+      var self = this,
+          xhr = new XMLHttpRequest()
+
       xhr.withCredentials = this.withCredentials
-      xhr.open(this.method, this.url, true)
 
-      // set headers
-      for (var name in this.headers) {
-        xhr.setRequestHeader(name, this.headers[name])
-      }
-
-      xhr.onreadystatechange = function () {
+      xhr.addEventListener('readystatechange', function () {
         if (xhr.readyState != 4) {
           return
         }
@@ -51,6 +55,17 @@
           return callback(err)
         }
         return callback(null, new Response(body, status, xhr))
+      })
+
+      xhr.addEventListener('error', function (evt) {
+        return callback(new Error('errorz'))
+      })
+
+      xhr.open(this.method, this.url, true)
+
+      // set headers
+      for (var name in this.headers) {
+        xhr.setRequestHeader(name, this.headers[name])
       }
 
       // send the request
@@ -81,8 +96,8 @@
   ;['get', 'post', 'put', 'delete', 'head', 'patch'].forEach(function (method) {
     Mule.prototype[method] = function (url) {
       if (this.host) {
-        var path = url.charAt(0) == '/'? url.slice(1) : url
-        url = this.host + '/' + path
+        var path = url.charAt(0) == '/'? url : '/' + url
+        url = this.host + path
       }
       return new Request(method, url)
     }
