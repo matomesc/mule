@@ -1,6 +1,6 @@
 # mule
 
-> json xhr client
+> json xhr client for those frustrated with $.ajax and the likes
 
 ## example
 
