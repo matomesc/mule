@@ -3,31 +3,39 @@
 
   function Request(method, url) {
     var self = this
+
+    // request headers
     this.headers = {
-      'Accept': 'application/json'
+      'accept': 'application/json'
     }
+    if (method == 'post' || method == 'put') {
+      this.headers['content-type'] = 'application/json'
+    }
+
     this.xhr = new XMLHttpRequest()
     this.xhr.open(method, url, true)
-    this.xhr.onreadystatechange = function () {
-      if (self.xhr.readyState === 4) {
-        return self.callback.call(null, new Response(self.xhr))
-      }
-    }
   }
   Request.prototype = {
     set: function (name, value) {
-      this.headers[name] = value
+      if (arguments.length == 2) {
+        this.headers[name.toLowerCase()] = value
+      } else {
+        for (var key in name) {
+          this.headers[key.toLowerCase()] = name[key]
+        }
+      }
       return this
     },
     body: function (obj) {
-      this.body = obj
+      this.body = JSON.stringify(obj)
       return this
     },
     end: function (callback) {
+      // set headers
       for (var name in this.headers) {
         this.xhr.setRequestHeader(name, this.headers[name])
       }
-      this.callback = callback
+      var response = new Response(this.xhr, callback)
       this.xhr.send(this.body || null)
     },
     withCredentials: function () {
@@ -36,10 +44,21 @@
     }
   }
 
-  function Response(xhr) {
+  function Response(xhr, callback) {
     this.xhr = xhr
-    this.status = xhr.status
-    this.body = JSON.parse(xhr.responseText)
+    xhr.onreadystatechange = this.handleResponse
+  }
+  Response.prototype.handleResponse = function () {
+    var self = this
+    if (self.xhr.readyState == 4) {
+      try {
+        self.body = JSON.parse(xhr.responseText)
+      } catch (e) {
+        return callback(e);
+      }
+      self.status = self.xhr.status
+      return callback(null, self)
+    }
   }
 
   var mule = root.mule = {}
