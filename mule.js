@@ -103,5 +103,11 @@
     }
   })
 
-  root.mule = new Mule()
+  if (typeof require !== 'undefined' && typeof define !== 'undefined') {
+      define(function () {
+        return new Mule()
+      })
+  } else {
+    root.mule = new Mule()
+  }
 }).call(window)
