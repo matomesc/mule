@@ -43,7 +43,7 @@
       xhr.withCredentials = this.withCredentials
       xhr.addEventListener('readystatechange', function () {
         if (xhr.readyState != 4) return
-        var status = xhr.status,
+        var status = xhr.status
         try {
           var json = JSON.parse(xhr.responseText)
         } catch (err) {
