@@ -93,7 +93,7 @@
     }
   })
   var mule = new Mule()
-  if (module && module.exports) {
+  if (module != undefined && module.exports) {
     module.exports = mule
   } else if (define) {
     define(function () {
