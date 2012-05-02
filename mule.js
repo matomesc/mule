@@ -40,35 +40,24 @@
     end: function (callback) {
       var self = this,
           xhr = new XMLHttpRequest()
-
       xhr.withCredentials = this.withCredentials
-
       xhr.addEventListener('readystatechange', function () {
-        if (xhr.readyState != 4) {
-          return
-        }
+        if (xhr.readyState != 4) return
         var status = xhr.status,
-            body
         try {
-          body = JSON.parse(xhr.responseText)
+          var json = JSON.parse(xhr.responseText)
         } catch (err) {
           return callback(err)
         }
-        return callback(null, new Response(body, status, xhr))
+        return callback(null, new Response(json, status, xhr))
       })
-
       xhr.addEventListener('error', function (evt) {
         return callback(new Error('errorz'))
       })
-
       xhr.open(this.method, this.url, true)
-
-      // set headers
       for (var name in this.headers) {
         xhr.setRequestHeader(name, this.headers[name])
       }
-
-      // send the request
       xhr.send(this.body || null)
     },
     withCredentials: function () {
@@ -86,6 +75,7 @@
   function Mule(host) {
     this.host = host || null
   }
+  
   Mule.prototype = {
     endpoint: function (host) {
       host = host.charAt(host.length - 1) == '/' ? host.slice(0, host.length - 1) : host
@@ -102,12 +92,14 @@
       return new Request(method, url)
     }
   })
-
-  if (typeof require !== 'undefined' && typeof define !== 'undefined') {
-      define(function () {
-        return new Mule()
-      })
+  var mule = new Mule()
+  if (module && module.exports) {
+    module.exports = mule
+  } else if (define) {
+    define(function () {
+      return mule
+    })
   } else {
-    root.mule = new Mule()
+    root.mule = mule
   }
-}).call(window)
+}).call(this)
